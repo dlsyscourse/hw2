@@ -94,9 +94,6 @@ class RandomSampler(Sampler):
 
         if self.num_samples is None:
             self.num_samples = len(data_source)
-        # if not isinstance(self.num_samples, int) or self.num_samples <= 0:
-        #     raise ValueError("num_samples should be a positive integer "
-        #                      "value, but got num_samples={}".format(self.num_samples))
 
     def __iter__(self) -> Iterator[int]:
         ### BEGIN YOUR SOLUTION
