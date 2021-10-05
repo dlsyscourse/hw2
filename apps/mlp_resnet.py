@@ -3,13 +3,11 @@ sys.path.append('../python')
 import needle as ndl
 import needle.nn as nn
 import numpy as np
-import gzip
 import time
-import struct
 import os
 
 np.random.seed(0)
-    
+
 def ResidualBlock(dim, hidden_dim, norm=nn.BatchNorm, drop_prob=0.1):
     np.random.seed(4)
     ### BEGIN YOUR SOLUTION

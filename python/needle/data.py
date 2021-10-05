@@ -51,9 +51,7 @@ class SequentialSampler(Sampler):
     data_source: Sized
 
     def __init__(self, data_source: Sized) -> None:
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        self.data_source = data_source
 
     def __iter__(self) -> Iterator[int]:
         ### BEGIN YOUR SOLUTION
