@@ -101,12 +101,14 @@ def softmax_loss_backward(rows, classes):
     return x.grad.cached_data
 
 def linear_forward(lhs_shape, rhs_shape):
+    np.random.seed(199)
     f = ndl.nn.Linear(*lhs_shape)
     f.bias.data = get_tensor(lhs_shape[-1])
     x = get_tensor(*rhs_shape)
     return f(x).cached_data
 
 def linear_backward(lhs_shape, rhs_shape):
+    np.random.seed(199)
     f = ndl.nn.Linear(*lhs_shape)
     f.bias.data = get_tensor(lhs_shape[-1])
     x = get_tensor(*rhs_shape)
@@ -153,7 +155,7 @@ def learn_model_1d(feature_size, nclasses, _model, optimizer, epochs=1, **kwargs
     for _ in range(epochs):
         for i, (X0, y0) in enumerate(zip(np.array_split(X, m//batch), np.array_split(y, m//batch))):
             opt.reset_grad()
-            X0, y0 = ndl.Tensor(X0), ndl.Tensor(y0)
+            X0, y0 = ndl.Tensor(X0, dtype="float64"), ndl.Tensor(y0)
             out = model(X0)
             loss = loss_func(out, y0)
             loss.backward()
@@ -180,7 +182,7 @@ def learn_model_1d_eval(feature_size, nclasses, _model, optimizer, epochs=1, **k
 
     for i, (X0, y0) in enumerate(zip(np.array_split(X, m//batch), np.array_split(y, m//batch))):
         opt.reset_grad()
-        X0, y0 = ndl.Tensor(X0), ndl.Tensor(y0)
+        X0, y0 = ndl.Tensor(X0, dtype="float64"), ndl.Tensor(y0)
         out = model(X0)
         loss = loss_func(out, y0)
         loss.backward()
@@ -512,52 +514,52 @@ def test_nn_linear_bias_init_1():
 
 def test_nn_linear_forward_1():
 	np.testing.assert_allclose(linear_forward((10, 5), (1, 10)),
-		np.array([[ 7.291807 , 4.7609396, 2.5289035, -0.9279093, 5.7124248]],
+		np.array([[4.500906 , 6.1882277, 2.776592 , 2.7484004, 4.4740047]],
 		 dtype=np.float32), rtol=1e-5, atol=1e-5)
 
 def test_nn_linear_forward_2():
 	np.testing.assert_allclose(linear_forward((10, 5), (3, 10)),
-		np.array([[ 4.9522624 , 3.0648706 , 4.0127726 , -0.07436925 ,
-		 3.2293718 ],
-		 [ 6.9003487 , 4.2715282 , 4.6051145 , 0.025732458,
-		 3.7189465 ],
-		 [ 6.4962726 , 4.6536026 , 4.3257895 , -0.580625 ,
-		 3.9568865 ]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array([[6.0984383, 6.4257445, 1.960106 , 3.021892 , 4.995041 ],
+		 [3.9694996, 5.4709086, 3.9861765, 1.3167176, 6.1898117],
+		 [4.101536 , 5.3559494, 3.5345604, 1.478467 , 5.5113983]],
+		 dtype=np.float32), rtol=1e-5, atol=1e-5)
 
 def test_nn_linear_forward_3():
 	np.testing.assert_allclose(linear_forward((10, 5), (1, 3, 10)),
-		np.array([[[6.726147 , 2.145597 , 4.7789755 , 1.2388263 , 3.731518 ],
-		 [6.075632 , 2.5914755 , 5.200816 , 1.6153958 , 4.6287766 ],
-		 [8.2445545 , 3.6689274 , 5.849495 , 0.31745103, 3.9959278 ]]],
+		np.array([[[4.7056465 , 5.893398 , 3.41159 , 1.711092 , 5.4316854 ],
+		 [5.057965 , 5.8713446 , 2.775173 , 2.7890613 , 4.190651 ],
+		 [3.4775314 , 5.8348427 , 2.8680677 , 0.35788536, 6.187058 ]]],
 		 dtype=np.float32), rtol=1e-5, atol=1e-5)
 
 def test_nn_linear_backward_1():
 	np.testing.assert_allclose(linear_backward((10, 5), (1, 10)),
-		np.array([[ 8.207197 , 1.037317 , -0.25784183, 9.752911 , -1.4494979 ,
-		 6.943037 , 0.4101156 , 3.4808013 , 1.4073412 , 9.580585 ]],
+		np.array([[ 5.2947245 , 0.91959167, 0.26689678, -3.8478894 , -2.229095 ,
+		 5.527555 , 1.4721361 , 3.413569 , 0.15164185, 1.9769696 ]],
 		 dtype=np.float32), rtol=1e-5, atol=1e-5)
 
 def test_nn_linear_backward_2():
 	np.testing.assert_allclose(linear_backward((10, 5), (3, 10)),
-		np.array([[-0.44060817, 1.9490935 , -4.090014 , 5.4311967 , 2.179588 ,
-		 1.6843976 , -1.4790373 , -0.88225126, -1.7327588 , 3.668062 ],
-		 [-0.30897814, 2.148559 , -5.8133783 , 7.171851 , 2.6093106 ,
-		 2.2967207 , -1.9258807 , -0.78110284, -2.144567 , 4.53043 ],
-		 [-0.6854518 , 2.0847359 , -5.724369 , 7.5123506 , 2.5859487 ,
-		 2.7731376 , -1.8782009 , -0.7462647 , -2.7381263 , 4.1210136 ]],
-		 dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array([[ 5.9509444 , 1.2286671 , 1.2691393 , -5.139695 ,
+		 -1.7781156 , 6.4433284 , 1.3105502 , 3.054307 ,
+		 -0.15840921 , 1.6229409 ],
+		 [ 3.8984354 , -0.8659983 , -0.16057509 , -2.449396 ,
+		 -3.1176708 , 4.395191 , 2.24761 , 5.2684264 ,
+		 1.4666293 , 3.4414766 ],
+		 [ 4.012814 , -0.47632354 , 0.022940274, -2.7253392 ,
+		 -2.7357936 , 4.4877257 , 1.908491 , 4.623176 ,
+		 1.0354484 , 2.9248025 ]], dtype=np.float32), rtol=1e-5, atol=1e-5)
 
 def test_nn_linear_backward_3():
 	np.testing.assert_allclose(linear_backward((10, 5), (1, 3, 10)),
-		np.array([[[ 0.062453713, 6.912467 , 3.2373505 , -3.0144918 ,
-		 1.1805179 , -0.3088065 , 7.2651415 , -2.1683373 ,
-		 5.0693707 , 1.7533228 ],
-		 [-0.31571788 , 6.733815 , 2.1583228 , -2.7543223 ,
-		 1.7180145 , -0.2782178 , 8.225773 , -2.474291 ,
-		 5.2670918 , 1.0211422 ],
-		 [-0.8396806 , 8.735854 , 4.6248417 , -4.721634 ,
-		 1.7866843 , 0.39754465 , 8.424235 , -3.363076 ,
-		 6.65899 , 2.2529879 ]]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array([[[ 4.5792813 , -0.16904578, 0.15121321, -3.3662672 ,
+		 -2.5989559 , 5.0748367 , 1.8369799 , 4.4778666 ,
+		 0.7916713 , 2.7237954 ],
+		 [ 5.24142 , 1.0139976 , 0.74751204, -3.9791915 ,
+		 -2.1211596 , 5.670805 , 0.98158216, 3.211544 ,
+		 -0.44029966, 1.6958663 ],
+		 [ 3.7483032 , -1.1836054 , -0.93143713, -2.8771822 ,
+		 -2.3863206 , 3.960793 , 3.1479712 , 4.927534 ,
+		 2.7126913 , 3.3999367 ]]], dtype=np.float32), rtol=1e-5, atol=1e-5)
 
 def submit_nn_linear():
 	mugrade.submit(linear_forward((3, 5), (1, 3)))
@@ -1598,23 +1600,23 @@ def submit_nn_residual():
 
 def test_optim_sgd_vanilla_1():
 	np.testing.assert_allclose(learn_model_1d(64, 16, lambda z: nn.Sequential(nn.Linear(64, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.SGD, lr=0.01, momentum=0.0),
-		np.array(2.805675, dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array(2.805675284037), rtol=1e-5, atol=1e-5)
 
 def test_optim_sgd_momentum_1():
 	np.testing.assert_allclose(learn_model_1d(64, 16, lambda z: nn.Sequential(nn.Linear(64, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.SGD, lr=0.01, momentum=0.9),
-		np.array(2.7530258, dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array(2.7530257035), rtol=1e-5, atol=1e-5)
 
 def test_optim_sgd_weight_decay_1():
 	np.testing.assert_allclose(learn_model_1d(64, 16, lambda z: nn.Sequential(nn.Linear(64, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.SGD, lr=0.01, momentum=0.0, weight_decay=0.01),
-		np.array(2.805243, dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array(2.805243015835), rtol=1e-5, atol=1e-5)
 
 def test_optim_sgd_momentum_weight_decay_1():
 	np.testing.assert_allclose(learn_model_1d(64, 16, lambda z: nn.Sequential(nn.Linear(64, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.SGD, lr=0.01, momentum=0.9, weight_decay=0.01),
-		np.array(2.7542677, dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array(2.754267687901), rtol=1e-5, atol=1e-5)
 
 def test_optim_sgd_layernorm_residual_1():
 	np.testing.assert_allclose(learn_model_1d(64, 16, lambda z: nn.Sequential(nn.Linear(64, 8), nn.ReLU(), nn.Residual(nn.Linear(8, 8), nn.ReLU(), nn.LayerNorm(8)), nn.Linear(8, 16)), ndl.optim.SGD, epochs=3, lr=0.01, weight_decay=0.001),
-		np.array(2.8084307, dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array(2.80843055054), rtol=1e-5, atol=1e-5)
 
 # We're checking that you have not allocated too many tensors;
 # if this fails, make sure you're using .detach()/.data whenever possible.
@@ -1632,19 +1634,19 @@ def submit_optim_sgd():
 
 def test_optim_adam_1():
 	np.testing.assert_allclose(learn_model_1d(64, 16, lambda z: nn.Sequential(nn.Linear(64, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, bias_correction=False),
-		np.array(2.7770789, dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array(2.7770788338), rtol=1e-5, atol=1e-5)
 
 def test_optim_adam_weight_decay_1():
 	np.testing.assert_allclose(learn_model_1d(64, 16, lambda z: nn.Sequential(nn.Linear(64, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, weight_decay=0.01, bias_correction=False),
-		np.array(2.7756457, dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array(2.775645683303), rtol=1e-5, atol=1e-5)
 
 def test_optim_adam_batchnorm_1():
 	np.testing.assert_allclose(learn_model_1d(64, 16, lambda z: nn.Sequential(nn.Linear(64, 32), nn.ReLU(), nn.BatchNorm(32), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, weight_decay=0.001, bias_correction=False),
-		np.array(2.8540673, dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array(2.8540688, dtype=np.float32), rtol=1e-5, atol=1e-5)
 
 def test_optim_adam_batchnorm_eval_mode_1():
 	np.testing.assert_allclose(learn_model_1d_eval(64, 16, lambda z: nn.Sequential(nn.Linear(64, 32), nn.ReLU(), nn.BatchNorm(32), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, weight_decay=0.001, bias_correction=False),
-		np.array(2.8398538, dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array(2.8398514, dtype=np.float32), rtol=1e-5, atol=1e-5)
 
 def test_optim_adam_layernorm_1():
 	np.testing.assert_allclose(learn_model_1d(64, 16, lambda z: nn.Sequential(nn.Linear(64, 32), nn.ReLU(), nn.LayerNorm(32), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.01, weight_decay=0.01, bias_correction=False),
@@ -1652,7 +1654,7 @@ def test_optim_adam_layernorm_1():
 
 def test_optim_adam_weight_decay_bias_correction_1():
 	np.testing.assert_allclose(learn_model_1d(64, 16, lambda z: nn.Sequential(nn.Linear(64, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, weight_decay=0.01, bias_correction=True),
-		np.array(2.7758114, dtype=np.float32), rtol=1e-5, atol=1e-5)
+		np.array(2.775811553566), rtol=1e-5, atol=1e-5)
 
 # We're checking that you have not allocated too many tensors;
 # if this fails, make sure you're using .detach()/.data whenever possible.
@@ -1661,12 +1663,12 @@ def test_optim_adam_z_memory_check_1():
 		np.array(1132), rtol=1e-5, atol=1000)
 
 def submit_optim_adam():
-	mugrade.submit(learn_model_1d(48, 16, lambda z: nn.Sequential(nn.Linear(48, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, bias_correction=False, epochs=3))
-	mugrade.submit(learn_model_1d(48, 16, lambda z: nn.Sequential(nn.Linear(48, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, weight_decay=0.01, bias_correction=False, epochs=3))
+	mugrade.submit(learn_model_1d(48, 16, lambda z: nn.Sequential(nn.Linear(48, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, bias_correction=False, epochs=2))
+	mugrade.submit(learn_model_1d(48, 16, lambda z: nn.Sequential(nn.Linear(48, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, weight_decay=0.01, bias_correction=False, epochs=2))
 	mugrade.submit(learn_model_1d(48, 16, lambda z: nn.Sequential(nn.Linear(48, 32), nn.ReLU(), nn.BatchNorm(32), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, weight_decay=0.001, bias_correction=False, epochs=3))
-	mugrade.submit(learn_model_1d_eval(48, 16, lambda z: nn.Sequential(nn.Linear(48, 32), nn.ReLU(), nn.BatchNorm(32), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, weight_decay=0.001, bias_correction=False, epochs=3))
-	mugrade.submit(learn_model_1d(48, 16, lambda z: nn.Sequential(nn.Linear(48, 32), nn.ReLU(), nn.LayerNorm(32), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.01, weight_decay=0.01, bias_correction=False, epochs=3))
-	mugrade.submit(learn_model_1d(48, 16, lambda z: nn.Sequential(nn.Linear(48, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, weight_decay=0.01, bias_correction=True, epochs=3))
+	mugrade.submit(learn_model_1d_eval(48, 16, lambda z: nn.Sequential(nn.Linear(48, 32), nn.ReLU(), nn.BatchNorm(32), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, weight_decay=0.001, bias_correction=False, epochs=2))
+	mugrade.submit(learn_model_1d(48, 16, lambda z: nn.Sequential(nn.Linear(48, 32), nn.ReLU(), nn.LayerNorm(32), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.01, weight_decay=0.01, bias_correction=False, epochs=2))
+	mugrade.submit(learn_model_1d(48, 16, lambda z: nn.Sequential(nn.Linear(48, 32), nn.ReLU(), nn.Linear(32, 16)), ndl.optim.Adam, lr=0.001, weight_decay=0.01, bias_correction=True, epochs=2))
 
 
 def test_mlp_residual_block_num_params_1():

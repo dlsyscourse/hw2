@@ -123,7 +123,7 @@ def submit_flip_horizontal():
     tform = ndl.data.FlipHorizontal()
     np.random.seed(0)
     for _ in range(10):
-        side = np.random.randint(1, 10)
+        side = np.random.randint(1, 5)
         mugrade.submit(tform(np.random.rand(side, side).flatten()))
 
 
@@ -518,8 +518,8 @@ def test_random_crop():
 def submit_random_crop():
     np.random.seed(0)
     for _ in range(20):
-        tform = ndl.data.RandomCrop(np.random.randint(1, 10))
-        size = np.random.randint(0, 30)
+        tform = ndl.data.RandomCrop(np.random.randint(1, 2))
+        size = np.random.randint(0, 4)
         mugrade.submit(tform(np.random.rand(size, size).flatten()))
 
 def test_sequential_sampler():
@@ -531,8 +531,7 @@ def test_sequential_sampler():
             assert i == sampled_idx, f'{i} does not equal {sampled_idx}'
 
 def submit_sequential_sampler():
-    for a in [np.random.rand(1000, 5), np.arange(25)]:
-        a = np.random.rand(1000, 5)
+    for a in [np.random.rand(23, 2), np.arange(25)]:
         sampler = ndl.data.SequentialSampler(a)
         idxs = [i for i in sampler]
         mugrade.submit(idxs)
@@ -574,7 +573,7 @@ def test_random_sampler():
     assert len(sampler) == 10
 
 def submit_random_sampler():
-    a = np.random.rand(2834)
+    a = np.random.rand(28)
     sampler = ndl.data.RandomSampler(a, False)
     mugrade.submit(sum([x for x in sampler]))
 
@@ -609,7 +608,7 @@ def test_batch_sampler():
 
 
 def submit_batch_sampler():
-    a = np.random.rand(197)
+    a = np.random.rand(23)
     sampler = ndl.data.SequentialSampler(a)
     batch_sampler = ndl.data.BatchSampler(sampler, 15, False)
     mugrade.submit([x for x in batch_sampler])
@@ -651,8 +650,8 @@ def test_collate_mnist():
 
 def submit_collate_mnist():
     np.random.seed(0)
-    for i in [25, 100, 1000]:
-        fake_x = np.random.rand(i, 25)
+    for i in [3, 5, 8]:
+        fake_x = np.random.rand(i, 7)
         fake_y = np.random.randint(0, 10, i)
         data = [(x, y) for x, y in zip(fake_x, fake_y)]
 
@@ -728,7 +727,7 @@ def test_mnist_dataset():
 def submit_mnist_dataset():
     mnist_train_dataset = ndl.data.MNISTDataset("data/train-images-idx3-ubyte.gz",
                                                 "data/train-labels-idx1-ubyte.gz")
-    mugrade.submit(mnist_train_dataset[69])
+    mugrade.submit(mnist_train_dataset[69][:25])
     mugrade.submit(len(mnist_train_dataset))
 
     tforms = [ndl.data.FlipHorizontal()]
@@ -737,7 +736,7 @@ def submit_mnist_dataset():
                                                 p=1,
                                                 transforms=tforms)
     for i in [822, 69, 420, 96]:
-        mugrade.submit(mnist_train_dataset[i])
+        mugrade.submit(mnist_train_dataset[i][:-25])
 
 
 
@@ -821,9 +820,9 @@ def submit_dataloader():
     subl = []
     for i, batch in enumerate(mnist_train_dataloader):
         batch_x, batch_y = batch[0].numpy(), batch[1].numpy()
-        subl.append(batch_x)
-        subl.append(batch_y)
-        if i > 10:
+        subl.append(np.sum(batch_x))
+        subl.append(np.sum(batch_y))
+        if i > 3:
             break
     mugrade.submit(subl)
 
@@ -839,10 +838,10 @@ def submit_dataloader():
     subl = []
     for i, batch in enumerate(mnist_test_dataloader):
         batch_x, batch_y = batch[0].numpy(), batch[1].numpy()
-        subl.append(batch_x)
-        subl.append(batch_y)
+        subl.append(np.sum(batch_x))
+        subl.append(np.sum(batch_y))
 
-    mugrade.submit(subl[-10:])
+    mugrade.submit(subl[-3:])
 
     bdrop = ndl.data.DataLoader(dataset=mnist_test_dataset,
                                    batch_size=13,
@@ -860,9 +859,9 @@ def submit_dataloader():
     subl = []
     for i, batch in enumerate(shuf):
         batch_x, batch_y = batch[0].numpy(), batch[1].numpy()
-        subl.append(batch_x)
-        subl.append(batch_y)
-        if i > 10:
+        subl.append(np.sum(batch_x))
+        subl.append(np.sum(batch_y))
+        if i > 3:
             break
     mugrade.submit(subl)
 
