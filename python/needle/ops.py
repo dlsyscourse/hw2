@@ -351,3 +351,7 @@ class LogSumExp(TensorOp):
         ### BEGIN YOUR SOLUTION
         raise NotImplementedError()
         ### END YOUR SOLUTION
+
+
+def logsumexp(a, axes=None):
+    return LogSumExp(axes=axes)(a)

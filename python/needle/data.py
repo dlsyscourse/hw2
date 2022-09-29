@@ -100,8 +100,8 @@ class DataLoader:
                                            range(batch_size, len(dataset), batch_size))
 
     def __iter__(self):
-        ### BEGIN YOUR SOLUTION ###
-        raise NotImplementedError() ###
+        ### BEGIN YOUR SOLUTION
+        raise NotImplementedError()
         ### END YOUR SOLUTION
         return self
 

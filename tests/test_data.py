@@ -55,27 +55,17 @@ def test_flip_horizontal():
 def submit_flip_horizontal():
     tform = ndl.data.RandomFlipHorizontal(0.5)
     np.random.seed(0)
-    for _ in range(3):
+    for _ in range(2):
         size_a, size_b, size_c = np.random.randint(1,5), np.random.randint(1,5), np.random.randint(1,5)
         mugrade.submit(tform(np.random.rand(size_a, size_b,size_c)))
 
     tform = ndl.data.RandomFlipHorizontal(0)
-    for _ in range(3):
+    for _ in range(2):
         size_a, size_b, size_c = np.random.randint(1,5), np.random.randint(1,5), np.random.randint(1,5)
         mugrade.submit(tform(np.random.rand(size_a, size_b,size_c)))
 
     tform = ndl.data.RandomFlipHorizontal(1.0)
-    for _ in range(3):
-        size_a, size_b, size_c = np.random.randint(1,5), np.random.randint(1,5), np.random.randint(1,5)
-        mugrade.submit(tform(np.random.rand(size_a, size_b,size_c)))
-
-    tform = ndl.data.RandomFlipHorizontal(0.7)
-    for _ in range(3):
-        size_a, size_b, size_c = np.random.randint(1,5), np.random.randint(1,5), np.random.randint(1,5)
-        mugrade.submit(tform(np.random.rand(size_a, size_b,size_c)))
-
-    tform = ndl.data.RandomFlipHorizontal(0.2)
-    for _ in range(3):
+    for _ in range(2):
         size_a, size_b, size_c = np.random.randint(1,5), np.random.randint(1,5), np.random.randint(1,5)
         mugrade.submit(tform(np.random.rand(size_a, size_b,size_c)))
 
@@ -145,19 +135,19 @@ def test_random_crop():
 def submit_random_crop():
     np.random.seed(0)
     tform = ndl.data.RandomCrop(0)
-    for _ in range(3):
-        size_a, size_b, size_c = np.random.randint(20,30), np.random.randint(20,30), np.random.randint(10,30)
+    for _ in range(2):
+        size_a, size_b, size_c = np.random.randint(4,5), np.random.randint(4,6), np.random.randint(4,7)
         mugrade.submit(tform(np.random.rand(size_a, size_b,size_c)))
 
-    tform = ndl.data.RandomCrop(10)
-    for _ in range(3):
-        size_a, size_b, size_c = np.random.randint(20,30), np.random.randint(20,30), np.random.randint(10,30)
+    tform = ndl.data.RandomCrop(2)
+    for _ in range(2):
+        size_a, size_b, size_c = np.random.randint(4,5), np.random.randint(4,6), np.random.randint(4,7)
         mugrade.submit(tform(np.random.rand(size_a, size_b,size_c)))
 
 
-    tform = ndl.data.RandomCrop(30)
-    for _ in range(3):
-        size_a, size_b, size_c = np.random.randint(20,30), np.random.randint(20,30), np.random.randint(10,30)
+    tform = ndl.data.RandomCrop(3)
+    for _ in range(2):
+        ize_a, size_b, size_c = np.random.randint(4,5), np.random.randint(4,6), np.random.randint(4,7)
         mugrade.submit(tform(np.random.rand(size_a, size_b,size_c)))
 
 
@@ -343,9 +333,9 @@ def submit_dataloader():
     subl = []
     for i, batch in enumerate(mnist_train_dataloader):
         batch_x, batch_y = batch[0].numpy(), batch[1].numpy()
-        subl.append(np.sum(batch_x))
+        subl.append(np.sum(batch_x[10:15,10:15]))
         subl.append(np.sum(batch_y))
-        if i > 3:
+        if i > 2:
             break
     mugrade.submit(subl)
 
@@ -360,16 +350,11 @@ def submit_dataloader():
     subl_y = []
     for i, batch in enumerate(mnist_test_dataloader):
         batch_x, batch_y = batch[0].numpy(), batch[1].numpy()
-        subl_x.append(batch_x)
+        subl_x.append(batch_x[10:15,10:15])
         subl_y.append(batch_y)
 
-    mugrade.submit(subl_x[-3:])
-    mugrade.submit(subl_y[-3:])
-
-    bdrop = iter(ndl.data.DataLoader(dataset=mnist_test_dataset,
-                                   batch_size=13,
-                                   shuffle=False))
-    mugrade.submit(next(bdrop))
+    mugrade.submit(subl_x[-2:])
+    mugrade.submit(subl_y[-2:])
 
     np.random.seed(0)
     shuf = ndl.data.DataLoader(dataset=mnist_test_dataset,
@@ -379,9 +364,9 @@ def submit_dataloader():
     subl_y = []
     for i, batch in enumerate(mnist_test_dataloader):
         batch_x, batch_y = batch[0].numpy(), batch[1].numpy()
-        subl_x.append(batch_x)
+        subl_x.append(batch_x[10:15,10:15])
         subl_y.append(batch_y)
-        if i > 3:
+        if i > 2:
             break
     mugrade.submit(subl_x)
     mugrade.submit(subl_y)

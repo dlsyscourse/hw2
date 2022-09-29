@@ -42,6 +42,19 @@ def batchnorm_backward(*shape, affine=False):
     y = (bn(x)**2).sum().backward()
     return x.grad.cached_data
 
+def flatten_forward(*shape):
+    x = get_tensor(*shape)
+    tform = ndl.nn.Flatten()
+    return tform(x).cached_data
+
+def flatten_backward(*shape):
+    x = get_tensor(*shape)
+    tform = ndl.nn.Flatten()
+    (tform(x)**2).sum().backward()
+    return x.grad.cached_data
+
+
+
 def batchnorm_running_mean(*shape, iters=10):
     bn = ndl.nn.BatchNorm1d(shape[1])
     for i in range(iters):
@@ -267,6 +280,17 @@ def power_scalar_backward(shape, power=2):
     y.backward()
     return x.grad.cached_data
 
+def logsumexp_forward(shape, axes):
+    x = get_tensor(*shape)
+    return (ndl.ops.logsumexp(x,axes=axes)).cached_data
+
+def logsumexp_backward(shape, axes):
+    x = get_tensor(*shape)
+    y = (ndl.ops.logsumexp(x, axes=axes)**2).sum()
+    y.backward()
+    return x.grad.cached_data
+
+
 def dropout_forward(shape, prob=0.5):
     np.random.seed(3)
     x = get_tensor(*shape)
@@ -344,6 +368,9 @@ def test_check_prng_contact_us_if_this_fails_1():
          [3.1 , 2.45, 2.3 ],
          [3.3 , 0.4 , 1.2 ]], dtype=np.float32), rtol=1e-08, atol=1e-08)
 
+
+
+
 def test_op_power_scalar_forward_1():
     np.testing.assert_allclose(power_scalar_forward((2,2), power=2),
         np.array([[11.222499, 17.639997],
@@ -359,10 +386,102 @@ def test_op_power_scalar_backward_1():
         np.array([[6.7, 8.4],
          [0.5, 9. ]], dtype=np.float32), rtol=1e-5, atol=1e-5)
 
-def submit_op_power_scalar():
-    mugrade.submit(power_scalar_forward((3,1), power=1.3))
-    mugrade.submit(power_scalar_forward((1,3), power=-0.3))
-    mugrade.submit(power_scalar_backward((3,3), power=-0.4))
+def test_op_logsumexp_forward_1():
+    np.testing.assert_allclose(logsumexp_forward((3,3,3),(1,2)),
+        np.array([5.366029 , 4.9753823, 6.208126 ], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+def test_op_logsumexp_forward_2():
+    np.testing.assert_allclose(logsumexp_forward((3,3,3),None),
+        np.array([6.7517853], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+def test_op_logsumexp_forward_3():
+    np.testing.assert_allclose(logsumexp_forward((1,2,3,4),(0,2)),
+        np.array([[5.276974 , 5.047317 , 3.778802 , 5.0103745],
+       [5.087831 , 4.391712 , 5.025037 , 2.0214698]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+
+def test_op_logsumexp_forward_4():
+    np.testing.assert_allclose(logsumexp_forward((3,10),(1,)),
+        np.array([5.705309, 5.976375, 5.696459], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+
+def test_op_logsumexp_forward_5():
+    test_data = ndl.ops.logsumexp(ndl.Tensor(np.array([[1e10,1e9,1e8,-10],[1e-10,1e9,1e8,-10]])), (0,)).numpy()
+    np.testing.assert_allclose(test_data,np.array([ 1.00000000e+10,  1.00000000e+09,  1.00000001e+08, -9.30685282e+00]), rtol=1e-5, atol=1e-5)
+
+def test_op_logsumexp_backward_1():
+    np.testing.assert_allclose(logsumexp_backward((3,1), (1,)),
+        np.array([[1. ],
+       [7.3],
+       [9.9]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+def test_op_logsumexp_backward_2():
+    np.testing.assert_allclose(logsumexp_backward((3,3,3), (1,2)),
+        np.array([[[1.4293308 , 1.2933122 , 0.82465225],
+        [0.50017685, 2.1323113 , 2.1323113 ],
+        [1.4293308 , 0.58112264, 0.40951014]],
+
+       [[0.3578173 , 0.07983983, 4.359107  ],
+        [1.1300558 , 0.561169  , 0.1132981 ],
+        [0.9252113 , 0.65198547, 1.7722803 ]],
+
+       [[0.2755132 , 2.365242  , 2.888913  ],
+        [0.05291228, 1.1745441 , 0.02627547],
+        [2.748018  , 0.13681579, 2.748018  ]]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+
+def test_op_logsumexp_backward_3():
+    np.testing.assert_allclose(logsumexp_backward((3,3,3), (0,2)),
+        np.array([[[0.92824626, 0.839912  , 0.5355515 ],
+        [0.59857905, 2.551811  , 2.551811  ],
+        [1.0213376 , 0.41524494, 0.29261813]],
+
+       [[0.16957533, 0.03783737, 2.0658503 ],
+        [0.98689   , 0.49007502, 0.09894446],
+        [0.48244575, 0.3399738 , 0.9241446 ]],
+
+       [[0.358991  , 3.081887  , 3.764224  ],
+        [0.12704718, 2.820187  , 0.06308978],
+        [3.9397335 , 0.19614778, 3.9397335 ]]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+def test_op_logsumexp_backward_5():
+    grad_compare = ndl.Tensor(np.array([[1e10,1e9,1e8,-10],[1e-10,1e9,1e8,-10]]))
+    test_data = (ndl.ops.logsumexp(grad_compare, (0,))**2).sum().backward()
+    np.testing.assert_allclose(grad_compare.grad.cached_data,np.array([[ 2.00000000e+10,  9.99999999e+08,  1.00000001e+08,
+        -9.30685282e+00],
+       [ 0.00000000e+00,  9.99999999e+08,  1.00000001e+08,
+        -9.30685282e+00]]), rtol=1e-5, atol=1e-5)
+
+
+def submit_op_logsumexp():
+    mugrade.submit(logsumexp_forward((2,2,2), None))
+    mugrade.submit(logsumexp_forward((1,2,3), (0,)))
+    mugrade.submit(logsumexp_forward((2,3,3),(1,2)))
+    mugrade.submit(logsumexp_forward((1,2,2,2,2), (1,2,3,4)))
+    mugrade.submit(logsumexp_forward((1,2,2,2,2), (0,1,3)))
+    mugrade.submit(logsumexp_backward((2,2,2), None))
+    mugrade.submit(logsumexp_backward((1,2,3), (0,)))
+    mugrade.submit(logsumexp_backward((2,3,3),(1,2)))
+    mugrade.submit(logsumexp_backward((1,2,2,2,2), (1,2,3,4)))
+    mugrade.submit(logsumexp_backward((1,2,2,2,2), (0,1,3)))
+
+
+
+def test_op_logsumexp_backward_4():
+    np.testing.assert_allclose(logsumexp_backward((1,2,3,4), None),
+        np.array([[[[0.96463485, 1.30212122, 0.09671321, 1.84779774],
+         [1.84779774, 0.39219132, 0.21523925, 0.30543892],
+         [0.01952606, 0.55654611, 0.32109909, 0.01598658]],
+
+        [[1.30212122, 0.83026929, 0.30543892, 0.01680623],
+         [0.29054249, 0.07532032, 1.84779774, 0.05307731],
+         [0.75125862, 0.26289377, 0.04802637, 0.03932065]]]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+
+
+
+
+
 
 
 def test_init_kaiming_uniform():
@@ -405,7 +524,7 @@ def submit_init():
     mugrade.submit(ndl.init.kaiming_normal(2,5).numpy())
     mugrade.submit(ndl.init.kaiming_uniform(2,5).numpy())
     mugrade.submit(ndl.init.xavier_uniform(2,5, gain=0.33).numpy())
-    mugrade.submit(ndl.init.xavier_normal(2,5, gain=1.3))
+    mugrade.submit(ndl.init.xavier_normal(2,5, gain=1.3).numpy())
 
 
 def test_nn_linear_weight_init_1():
@@ -675,6 +794,8 @@ def submit_nn_batchnorm():
     mugrade.submit(batchnorm_forward(2, 3))
     mugrade.submit(batchnorm_forward(3, 4, affine=True))
     mugrade.submit(batchnorm_backward(5, 3))
+
+    # todo(Zico) : these need to be added to mugrade
     mugrade.submit(batchnorm_backward(4, 2, affine=True))
     mugrade.submit(batchnorm_running_mean(3, 3))
     mugrade.submit(batchnorm_running_mean(3, 3))
@@ -719,6 +840,119 @@ def test_nn_residual_backward_1():
 def submit_nn_residual():
     mugrade.submit(residual_forward(shape=(3,4)))
     mugrade.submit(residual_backward(shape=(3,4)))
+
+
+def test_nn_flatten_forward_1():
+    np.testing.assert_allclose(flatten_forward(3,3), np.array([[2.1 , 0.95, 3.45],
+       [3.1 , 2.45, 2.3 ],
+       [3.3 , 0.4 , 1.2 ]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+
+def test_nn_flatten_forward_2():
+    np.testing.assert_allclose(flatten_forward(3,3,3), np.array([[3.35, 3.25, 2.8 , 2.3 , 3.75, 3.75, 3.35, 2.45, 2.1 ],
+       [1.65, 0.15, 4.15, 2.8 , 2.1 , 0.5 , 2.6 , 2.25, 3.25],
+       [2.4 , 4.55, 4.75, 0.75, 3.85, 0.05, 4.7 , 1.7 , 4.7 ]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+
+def test_nn_flatten_forward_3():
+    np.testing.assert_allclose(flatten_forward(1,2,3,4), np.array([[4.2 , 4.5 , 1.9 , 4.85, 4.85, 3.3 , 2.7 , 3.05, 0.3 , 3.65, 3.1 ,
+        0.1 , 4.5 , 4.05, 3.05, 0.15, 3.  , 1.65, 4.85, 1.3 , 3.95, 2.9 ,
+        1.2 , 1.  ]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+
+def test_nn_flatten_forward_4():
+    np.testing.assert_allclose(flatten_forward(3,3,4,4), np.array([[0.95, 1.1 , 1.  , 1.  , 4.9 , 0.25, 1.6 , 0.35, 1.5 , 3.4 , 1.75,
+        3.4 , 4.8 , 1.4 , 2.35, 3.2 , 1.65, 1.9 , 3.05, 0.35, 3.15, 4.05,
+        3.3 , 2.2 , 2.5 , 1.5 , 3.25, 0.65, 3.05, 0.75, 3.25, 2.55, 0.55,
+        0.25, 3.65, 3.4 , 0.05, 1.4 , 0.75, 1.55, 4.45, 0.2 , 3.35, 2.45,
+        3.45, 4.75, 2.45, 4.3 ],
+       [1.  , 0.2 , 0.4 , 0.7 , 4.9 , 4.2 , 2.55, 3.15, 1.2 , 3.8 , 1.35,
+        1.85, 3.15, 2.7 , 1.5 , 1.35, 4.85, 4.2 , 1.5 , 1.75, 0.8 , 4.3 ,
+        4.2 , 4.85, 0.  , 3.75, 0.9 , 0.  , 3.35, 1.05, 2.2 , 0.75, 3.6 ,
+        2.  , 1.2 , 1.9 , 3.45, 1.6 , 3.95, 4.45, 4.55, 4.75, 3.7 , 0.3 ,
+        2.45, 3.75, 0.9 , 2.2 ],
+       [4.95, 1.05, 2.4 , 4.05, 3.75, 1.95, 0.65, 4.9 , 4.3 , 2.5 , 1.9 ,
+        1.75, 2.05, 3.95, 0.8 , 0.  , 0.8 , 3.45, 1.55, 0.3 , 1.5 , 2.9 ,
+        2.15, 2.15, 3.3 , 3.2 , 4.3 , 3.7 , 0.4 , 1.7 , 0.35, 1.9 , 1.8 ,
+        4.3 , 4.7 , 4.05, 3.65, 1.1 , 1.  , 2.7 , 3.95, 2.3 , 2.6 , 3.5 ,
+        0.75, 4.3 , 3.  , 3.85]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+
+def test_nn_flatten_backward_1():
+    np.testing.assert_allclose(flatten_backward(3,3), np.array([[4.2, 1.9, 6.9],
+       [6.2, 4.9, 4.6],
+       [6.6, 0.8, 2.4]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+def test_nn_flatten_backward_2():
+    np.testing.assert_allclose(flatten_backward(3,3,3), np.array([[[6.7, 6.5, 5.6],
+        [4.6, 7.5, 7.5],
+        [6.7, 4.9, 4.2]],
+
+       [[3.3, 0.3, 8.3],
+        [5.6, 4.2, 1. ],
+        [5.2, 4.5, 6.5]],
+
+       [[4.8, 9.1, 9.5],
+        [1.5, 7.7, 0.1],
+        [9.4, 3.4, 9.4]]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+
+def test_nn_flatten_backward_3():
+    np.testing.assert_allclose(flatten_backward(2,2,2,2), np.array([[[[6.8, 3.8],
+         [5.4, 5.1]],
+
+        [[8.5, 4.8],
+         [3.1, 1. ]]],
+
+
+       [[[9.3, 0.8],
+         [3.4, 1.6]],
+
+        [[9.4, 3.6],
+         [6.6, 7. ]]]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+def test_nn_flatten_backward_4():
+    np.testing.assert_allclose(flatten_backward(1,2,3,4), np.array([[[[8.4, 9. , 3.8, 9.7],
+         [9.7, 6.6, 5.4, 6.1],
+         [0.6, 7.3, 6.2, 0.2]],
+
+        [[9. , 8.1, 6.1, 0.3],
+         [6. , 3.3, 9.7, 2.6],
+         [7.9, 5.8, 2.4, 2. ]]]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+
+def test_nn_flatten_backward_5():
+    np.testing.assert_allclose(flatten_backward(2,2,4,3), np.array([[[[9.8, 7.1, 5.4],
+         [4. , 6.2, 5.7],
+         [7.2, 2. , 2.4],
+         [8.9, 4.9, 3.3]],
+
+        [[9. , 9.8, 5.9],
+         [7.1, 2.7, 9.6],
+         [8.5, 9.3, 5.8],
+         [3.1, 9. , 6.7]]],
+
+
+       [[[7.4, 8.6, 6.9],
+         [8.2, 5.3, 8.7],
+         [8.8, 8.7, 4. ],
+         [3.9, 1.8, 2.7]],
+
+        [[5.7, 6.2, 0. ],
+         [6. , 0. , 0.3],
+         [2. , 0.1, 2.7],
+         [2.1, 0.1, 6.7]]]], dtype=np.float32), rtol=1e-5, atol=1e-5)
+
+def submit_nn_flatten():
+    mugrade.submit(flatten_forward(1,2,2))
+    mugrade.submit(flatten_forward(2,2,2))
+    mugrade.submit(flatten_forward(2,3,4,2,1,2))
+    mugrade.submit(flatten_forward(2,3))
+    mugrade.submit(flatten_backward(1,2,2))
+    mugrade.submit(flatten_backward(2,2,2))
+    mugrade.submit(flatten_backward(2,3,4,2,1,2))
+    mugrade.submit(flatten_backward(2,3,4,4))
+    
 
 
 def test_optim_sgd_vanilla_1():
