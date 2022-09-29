@@ -675,8 +675,6 @@ def submit_nn_batchnorm():
     mugrade.submit(batchnorm_forward(2, 3))
     mugrade.submit(batchnorm_forward(3, 4, affine=True))
     mugrade.submit(batchnorm_backward(5, 3))
-
-    # todo(Zico) : these need to be added to mugrade
     mugrade.submit(batchnorm_backward(4, 2, affine=True))
     mugrade.submit(batchnorm_running_mean(3, 3))
     mugrade.submit(batchnorm_running_mean(3, 3))
