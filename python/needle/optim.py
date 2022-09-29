@@ -20,7 +20,7 @@ class SGD(Optimizer):
         super().__init__(params)
         self.lr = lr
         self.momentum = momentum
-        self.delta = {}
+        self.u = {}
         self.weight_decay = weight_decay
 
     def step(self):
@@ -29,16 +29,22 @@ class SGD(Optimizer):
         ### END YOUR SOLUTION
 
 
-
 class Adam(Optimizer):
-    def __init__(self, params, lr=0.01, beta1=0.9, beta2=0.999, eps=1e-8, bias_correction=True, weight_decay=0.0):
+    def __init__(
+        self,
+        params,
+        lr=0.01,
+        beta1=0.9,
+        beta2=0.999,
+        eps=1e-8,
+        weight_decay=0.0,
+    ):
         super().__init__(params)
         self.lr = lr
         self.beta1 = beta1
         self.beta2 = beta2
         self.eps = eps
         self.weight_decay = weight_decay
-        self.bias_correction = bias_correction
         self.t = 0
 
         self.m = {}
