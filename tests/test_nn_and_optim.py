@@ -768,7 +768,7 @@ def test_nn_batchnorm_backward_affine_1():
          [ 4.6386719e-03, -8.9883804e-05, -4.5776367e-05, 4.3869019e-05],
          [-7.7133179e-03, 2.7418137e-05, 6.6757202e-05, 7.4386597e-05],
          [ 6.1874390e-03, 5.2213669e-05, 2.8610229e-05, -1.9073486e-06]],
-         dtype=np.float32), rtol=1e-5, atol=1e-5)
+         dtype=np.float32), rtol=1e-5, atol=1e-4)
 
 
 def test_nn_batchnorm_running_mean_1():
