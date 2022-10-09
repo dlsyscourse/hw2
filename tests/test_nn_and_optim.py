@@ -1105,4 +1105,4 @@ def submit_mlp_resnet():
     mugrade.submit(mlp_resnet_forward(15, 3, 2, 15, nn.BatchNorm1d, 0.3))
     mugrade.submit(train_epoch_1(7, 256, ndl.optim.Adam, lr=0.01, weight_decay=0.01))
     mugrade.submit(eval_epoch_1(12, 154))
-    mugrade.submit(train_mnist_1(554, 3, ndl.optim.SGD, 0.01, 0.01, 7))
+    mugrade.submit(train_mnist_1(550, 1, ndl.optim.SGD, 0.01, 0.01, 7))
