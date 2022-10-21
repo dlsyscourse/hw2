@@ -262,9 +262,17 @@ def test_dataloader_mnist():
 
     for i, batch in enumerate(mnist_test_dataloader):
         batch_x, batch_y = batch[0].numpy(), batch[1].numpy()
-        truth = mnist_test_dataset[i * batch_size:(i + 1) * batch_size]
-        truth_x = truth[0]
-        truth_y = truth[1]
+        start_idx = i * batch_size
+        end_idx = (i + 1) * batch_size
+        truth_x = []
+        truth_y = []
+        for j in range(start_idx, end_idx):
+            x, y = mnist_test_dataset.__getitem__(j)
+            truth_x.append(x)
+            truth_y.append(y)
+        # truth = mnist_test_dataset[i * batch_size:(i + 1) * batch_size]
+        truth_x = np.array(truth_x)
+        truth_y = np.array(truth_y)
 
         np.testing.assert_allclose(truth_x, batch_x)
         np.testing.assert_allclose(batch_y, truth_y)
