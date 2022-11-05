@@ -221,7 +221,6 @@ def global_tensor_count():
 def nn_linear_weight_init():
     np.random.seed(1337)
     f = ndl.nn.Linear(7, 4)
-    f.weight.cached_data
     return f.weight.cached_data
 
 def nn_linear_bias_init():
