@@ -28,6 +28,14 @@ class SGD(Optimizer):
         raise NotImplementedError()
         ### END YOUR SOLUTION
 
+    def clip_grad_norm(self, max_norm=0.25):
+        """
+        Clips gradient norm of parameters.
+        """
+        ### BEGIN YOUR SOLUTION
+        raise NotImplementedError()
+        ### END YOUR SOLUTION
+
 
 class Adam(Optimizer):
     def __init__(
