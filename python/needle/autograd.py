@@ -18,7 +18,6 @@ import numpy as array_api
 NDArray = numpy.ndarray
 
 
-
 class Op:
     """Operator definition."""
 
@@ -188,7 +187,7 @@ class TensorTuple(Value):
 
     def detach(self):
         """Create a new tensor that shares the data but detaches from the graph."""
-        return Tuple.make_const(self.realize_cached_data())
+        return TensorTuple.make_const(self.realize_cached_data())
 
 
 class Tensor(Value):
@@ -359,10 +358,10 @@ class Tensor(Value):
     def transpose(self, axes=None):
         return needle.ops.Transpose(axes)(self)
 
+
     __radd__ = __add__
     __rmul__ = __mul__
-    __rsub__ = __sub__
-    __rmatmul__ = __matmul__
+
 
 
 def compute_gradient_of_variables(output_tensor, out_grad):
