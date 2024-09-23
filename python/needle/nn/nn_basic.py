@@ -110,7 +110,6 @@ class ReLU(Module):
         raise NotImplementedError()
         ### END YOUR SOLUTION
 
-
 class Sequential(Module):
     def __init__(self, *modules):
         super().__init__()
@@ -143,6 +142,7 @@ class BatchNorm1d(Module):
         ### BEGIN YOUR SOLUTION
         raise NotImplementedError()
         ### END YOUR SOLUTION
+
 
 
 class LayerNorm1d(Module):
