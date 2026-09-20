@@ -10691,6 +10691,15 @@ def test_mnist_dataset():
     )
     assert len(mnist_train_dataset) == 60000
 
+    assert mnist_train_dataset[0][0].shape == (28, 28, 1), (
+        "MNISTDataset[i] should return an image of shape (28, 28, 1), got "
+        "{}".format(mnist_train_dataset[0][0].shape)
+    )
+    assert mnist_train_dataset[:5][0].shape == (5, 28, 28, 1), (
+        "MNISTDataset[i:j] should return a batch of shape (5, 28, 28, 1), got "
+        "{}".format(mnist_train_dataset[:5][0].shape)
+    )
+
     sample_norms = np.array(
         [
             np.linalg.norm(mnist_train_dataset[idx][0])
@@ -10724,6 +10733,11 @@ def test_mnist_dataset():
         "data/t10k-images-idx3-ubyte.gz", "data/t10k-labels-idx1-ubyte.gz"
     )
     assert len(mnist_train_dataset) == 10000
+
+    assert mnist_train_dataset[0][0].shape == (28, 28, 1), (
+        "MNISTDataset[i] should return an image of shape (28, 28, 1), got "
+        "{}".format(mnist_train_dataset[0][0].shape)
+    )
 
     sample_norms = np.array(
         [
@@ -10810,14 +10824,19 @@ def test_mnist_dataset():
     np.testing.assert_allclose(sample_norms, compare_against, rtol=1e-5, atol=1e-5)
     np.testing.assert_allclose(sample_labels, compare_labels)
 
+    assert mnist_train_dataset[0][0].shape == (28, 28, 1), (
+        "Transforms should preserve the (28, 28, 1) image shape, got "
+        "{}".format(mnist_train_dataset[0][0].shape)
+    )
+
 
 def submit_mnist_dataset():
     mnist_train_dataset = ndl.data.MNISTDataset(
         "data/train-images-idx3-ubyte.gz", "data/train-labels-idx1-ubyte.gz"
     )
-    mugrade.submit(mnist_train_dataset[69][:25])
+    mugrade.submit(mnist_train_dataset[69])
     mugrade.submit(len(mnist_train_dataset))
-    np.random.seed(0)
+    np.random.seed(1)
     tforms = [ndl.data.RandomFlipHorizontal()]
     mnist_train_dataset = ndl.data.MNISTDataset(
         "data/train-images-idx3-ubyte.gz",
@@ -10826,7 +10845,7 @@ def submit_mnist_dataset():
     )
 
     for i in [822, 69, 420, 96]:
-        mugrade.submit(mnist_train_dataset[i][:-25])
+        mugrade.submit(mnist_train_dataset[i])
 
     tforms = [ndl.data.RandomCrop(15), ndl.data.RandomFlipHorizontal()]
     mnist_train_dataset = ndl.data.MNISTDataset(
@@ -10836,7 +10855,7 @@ def submit_mnist_dataset():
     )
 
     for i in [822, 69, 420, 96]:
-        mugrade.submit(mnist_train_dataset[i][:-25])
+        mugrade.submit(mnist_train_dataset[i])
 
 
 def test_dataloader_mnist():
@@ -10963,7 +10982,7 @@ def submit_dataloader():
     subl = []
     for i, batch in enumerate(mnist_train_dataloader):
         batch_x, batch_y = batch[0].numpy(), batch[1].numpy()
-        subl.append(np.sum(batch_x[10:15, 10:15]))
+        subl.append(np.sum(batch_x[:, 10:15, 10:15]))
         subl.append(np.sum(batch_y))
         if i > 2:
             break
@@ -10981,7 +11000,7 @@ def submit_dataloader():
     subl_y = []
     for i, batch in enumerate(mnist_test_dataloader):
         batch_x, batch_y = batch[0].numpy(), batch[1].numpy()
-        subl_x.append(batch_x[10:15, 10:15])
+        subl_x.append(batch_x[:, 10:15, 10:15])
         subl_y.append(batch_y)
 
     mugrade.submit(subl_x[-2:])
@@ -10991,9 +11010,9 @@ def submit_dataloader():
     shuf = ndl.data.DataLoader(dataset=mnist_test_dataset, batch_size=10, shuffle=True)
     subl_x = []
     subl_y = []
-    for i, batch in enumerate(mnist_test_dataloader):
+    for i, batch in enumerate(shuf):
         batch_x, batch_y = batch[0].numpy(), batch[1].numpy()
-        subl_x.append(batch_x[10:15, 10:15])
+        subl_x.append(batch_x[:, 10:15, 10:15])
         subl_y.append(batch_y)
         if i > 2:
             break

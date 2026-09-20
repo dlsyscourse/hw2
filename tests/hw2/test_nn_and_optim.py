@@ -768,7 +768,7 @@ def test_nn_linear_weight_init_1():
 def test_nn_linear_bias_init_1():
     np.testing.assert_allclose(
         nn_linear_bias_init(),
-        np.array([[0.077647, 0.814139, -0.770975, 1.120297]], dtype=np.float32),
+        np.array([0.077647, 0.814139, -0.770975, 1.120297], dtype=np.float32),
         rtol=1e-5,
         atol=1e-5,
     )
